@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NanaStitch — Професійний редактор схем для вишивання</title>
+    <meta name="description" content="Створюйте професійні паттерни для вишивання хрестиком">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+    <div id="app">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="logo">
+                <i data-lucide="grid-3x3"></i>
+                <span>Nana<strong>Stitch</strong></span>
+            </div>
+            <nav class="header-actions">
+                <button id="btn-new" title="Новий проект (Ctrl+N)"><i data-lucide="file-plus"></i></button>
+                <button id="btn-open" title="Відкрити .xstitch (Ctrl+O)"><i data-lucide="folder-open"></i></button>
+                <button id="btn-save" title="Зберегти (Ctrl+S)"><i data-lucide="save"></i></button>
+                <button id="btn-download" title="Завантажити .xstitch"><i data-lucide="download"></i></button>
+                <button id="btn-export-img" title="Зберегти як зображення (PNG)"><i data-lucide="image"></i></button>
+                <div class="divider"></div>
+                <button id="btn-export-pdf" title="Експорт PDF"><i data-lucide="file-text"></i></button>
+                <div class="divider"></div>
+                <button id="btn-theme" title="Змінити тему"><i data-lucide="sun"></i></button>
+                <div class="divider"></div>
+                <button id="btn-ai-settings" title="Налаштування AI (ШІ)" style="position:relative;"><i data-lucide="sparkles"></i></button>
+            </nav>
+        </header>
+
+        <!-- MAIN -->
+        <main class="app-main">
+            <!-- LEFT SIDEBAR -->
+            <aside class="sidebar-left" id="sidebar-left">
+                <section class="history-section">
+                    <div class="history-controls">
+                        <button id="btn-undo-side" class="history-btn" title="Назад (Ctrl+Z)"><i data-lucide="undo-2"></i><span>Назад</span></button>
+                        <button id="btn-redo-side" class="history-btn" title="Вперед (Ctrl+Y)"><i data-lucide="redo-2"></i><span>Вперед</span></button>
+                    </div>
+                </section>
+
+                <section class="tool-section">
+                    <h3>Інструменти</h3>
+                    <div class="tool-grid">
+                        <button class="tool-btn active" data-tool="pencil" title="Олівець (P)"><i data-lucide="pencil"></i><span>Олівець</span></button>
+                        <button class="tool-btn" data-tool="eraser" title="Ластик (E)"><i data-lucide="eraser"></i><span>Ластик</span></button>
+                        <button class="tool-btn" data-tool="fill" title="Заливка (F)"><i data-lucide="paint-bucket"></i><span>Заливка</span></button>
+                        <button class="tool-btn" data-tool="picker" title="Піпетка (I)"><i data-lucide="pipette"></i><span>Піпетка</span></button>
+                        <button class="tool-btn" data-tool="line" title="Лінія (L)"><i data-lucide="minus"></i><span>Лінія</span></button>
+                        <button class="tool-btn" data-tool="rect" title="Прямокутник (R)"><i data-lucide="square"></i><span>Фігура</span></button>
+                        <button class="tool-btn" data-tool="magic_eraser" title="Чарівна Гумка (M)"><i data-lucide="wand-2"></i><span>Чар. Гумка</span></button>
+                        <button class="tool-btn" data-tool="global_replace" title="Заміна Кольору (G)"><i data-lucide="replace"></i><span>Заміна</span></button>
+                        <button class="tool-btn" data-tool="pan" title="Навігація (Space)"><i data-lucide="hand"></i><span>Навігація</span></button>
+                        <button class="tool-btn" data-tool="anticonfetti" title="Антиконфеті (C)"><i data-lucide="sparkles"></i><span>Антиконфеті</span></button>
+                        <button class="tool-btn" data-tool="backstitch" title="Бекстітч (B)"><i data-lucide="spline"></i><span>Бекстітч</span></button>
+                        <button class="tool-btn" data-tool="ai_enhance" title="AI Покращення схеми"><i data-lucide="sparkles"></i><span>AI Покращ.</span></button>
+                    </div>
+                </section>
+                
+                <section class="tool-properties-panel" id="tool-properties-panel">
+                    <h3>Властивості: <span id="prop-tool-name">Олівець</span></h3>
+                    
+                    <div id="prop-group-brush" class="prop-group active">
+                        <label>Розмір пензля:</label>
+                        <div class="brush-sizes" id="brush-sizes">
+                            <button class="brush-btn active" data-size="1">1</button>
+                            <button class="brush-btn" data-size="2">2</button>
+                            <button class="brush-btn" data-size="3">3</button>
+                            <button class="brush-btn" data-size="5">5</button>
+                            <button class="brush-btn" data-size="10">10</button>
+                            <button class="brush-btn" data-size="20">20</button>
+                            <button class="brush-btn" data-size="30">30</button>
+                        </div>
+                        <label style="margin-top: 8px;">Форма:</label>
+                        <div class="brush-shapes" id="brush-shapes">
+                            <button class="shape-btn active" data-shape="square" title="Квадрат"><i data-lucide="square"></i></button>
+                            <button class="shape-btn" data-shape="round" title="Коло"><i data-lucide="circle"></i></button>
+                        </div>
+                    </div>
+
+                    <div id="prop-group-fill" class="prop-group">
+                        <label>Толерантність (схожість): <span id="prop-tol-val">0</span></label>
+                        <input type="range" id="fill-tolerance" min="0" max="100" value="0" class="tol-slider">
+                        <small class="prop-hint">0 = тільки точний збіг кольору.</small>
+                    </div>
+
+                    <div id="prop-group-replace" class="prop-group">
+                        <label>Режим заміни:</label>
+                        <div class="toggle-switch-container">
+                            <button class="toggle-btn active" id="btn-replace-local" data-mode="local">В групі</button>
+                            <button class="toggle-btn" id="btn-replace-global" data-mode="global">Всюди</button>
+                        </div>
+                        <small class="prop-hint" id="replace-hint">Замінює тільки суміжні хрестики.</small>
+                    </div>
+
+                    <div id="prop-group-empty" class="prop-group">
+                        <small class="prop-hint" style="text-align: center; display: block; padding: 10px 0;">Для цього інструменту немає додаткових налаштувань.</small>
+                    </div>
+                </section>
+
+                <section class="color-swatch-panel" title="Поточний та фоновий колір. Натисніть X для зміни.">
+                    <div class="swatch-container">
+                        <div class="swatch-bg" id="swatch-bg" style="background-color: transparent;"></div>
+                        <div class="swatch-fg" id="swatch-fg" style="background-color: transparent;"></div>
+                        <button id="btn-swap-colors" class="btn-swap-colors" title="Поміняти місцями (X)"><i data-lucide="arrow-down-up"></i></button>
+                    </div>
+                    <div class="color-info-details">
+                        <div id="info-color-code">DMC ---</div>
+                        <div id="info-color-name">Не вибрано</div>
+                    </div>
+                </section>
+            </aside>
+
+            <div class="resizer" id="resizer-left"></div>
+
+            <!-- WORKSPACE -->
+            <section class="workspace" id="workspace">
+                <div class="canvas-wrapper" id="canvas-wrapper">
+                    <div class="canvas-container" id="canvas-container">
+                        <canvas id="main-canvas"></canvas>
+                        <canvas id="preview-canvas"></canvas>
+                        <canvas id="grid-canvas"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <div class="resizer" id="resizer-right"></div>
+
+            <!-- RIGHT SIDEBAR -->
+            <aside class="sidebar-right" id="sidebar-right">
+                <div class="sidebar-tabs">
+                    <button class="tab-btn-side active" data-tab="tab-project">Проект</button>
+                    <button class="tab-btn-side" data-tab="tab-palette">Палітра</button>
+                    <button class="tab-btn-side" data-tab="tab-layout">Макет</button>
+                </div>
+
+                <!-- PROJECT TAB -->
+                <div id="tab-project" class="tab-side-content active">
+                    <div class="tool-group">
+                        <h4>Основне</h4>
+                        <div class="info-group">
+                            <label>Назва</label>
+                            <input type="text" id="project-name" value="Без назви" class="input-field">
+                        </div>
+                    </div>
+                    <div class="tool-group">
+                        <h4>Розмір схеми</h4>
+                        <div class="info-group">
+                            <label>Новий розмір (хрестиків)</label>
+                            <div class="input-row" style="align-items: center; gap: 4px;">
+                                <input type="number" id="grid-width" value="80" min="10" max="800" class="input-field" style="width: 60px;">
+                                <button id="btn-lock-ratio" class="btn-icon active" title="Зберегти пропорції" style="padding: 4px; border:none; background:transparent;"><i data-lucide="lock"></i></button>
+                                <input type="number" id="grid-height" value="80" min="10" max="800" class="input-field" style="width: 60px;">
+                            </div>
+                            <button id="btn-resize" class="btn-small">Масштабувати схему</button>
+                        </div>
+                    </div>
+
+                    <div class="tool-group">
+                        <h4>Додати клітинки (без масштабування)</h4>
+                        <div class="padding-controls">
+                            <div class="input-row" style="justify-content: center; margin-bottom: 8px;">
+                                <input type="number" id="pad-amount" value="10" min="-500" max="500" class="input-field" style="width: 60px; text-align:center;">
+                            </div>
+                            <div class="pad-buttons" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; justify-items: center;">
+                                <div></div>
+                                <button id="btn-pad-top" class="btn-small" title="Додати зверху" style="margin:0;"><i data-lucide="arrow-up"></i></button>
+                                <div></div>
+                                <button id="btn-pad-left" class="btn-small" title="Додати зліва" style="margin:0;"><i data-lucide="arrow-left"></i></button>
+                                <div></div>
+                                <button id="btn-pad-right" class="btn-small" title="Додати справа" style="margin:0;"><i data-lucide="arrow-right"></i></button>
+                                <div></div>
+                                <button id="btn-pad-bottom" class="btn-small" title="Додати знизу" style="margin:0;"><i data-lucide="arrow-down"></i></button>
+                                <div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-group">
+                        <h4>Тканина та Розміри</h4>
+                        <div class="info-group">
+                            <select id="canvas-count" class="input-field">
+                                <option value="14">Aida 14 ct</option>
+                                <option value="16" selected>Aida 16 ct</option>
+                                <option value="18">Aida 18 ct</option>
+                                <option value="20">Aida 20 ct</option>
+                                <option value="25">Evenweave 25 ct</option>
+                            </select>
+                        </div>
+                        <div class="dimension-stats" id="dimension-stats">
+                            <div class="dim-row"><span class="dim-label">Стібків:</span><span class="dim-val" id="stat-stitches">0</span></div>
+                            <div class="dim-row"><span class="dim-label">Кольорів:</span><span class="dim-val" id="stat-colors">0</span></div>
+                            <div class="dim-row"><span class="dim-label">Розмір (см):</span><span class="dim-val" id="stat-size-cm">0 × 0</span></div>
+                            <div class="dim-row"><span class="dim-label">Розмір (дюйми):</span><span class="dim-val" id="stat-size-inch">0 × 0</span></div>
+                        </div>
+                    </div>
+
+                    <div class="tool-group">
+                        <h4>Збережені проекти</h4>
+                        <div id="recent-list" class="recent-list"></div>
+                    </div>
+                </div>
+
+                <!-- PALETTE TAB -->
+                <div id="tab-palette" class="tab-side-content">
+                    <div class="tool-group">
+                        <h4>Оптимізація</h4>
+                        <div class="confetti-panel">
+                            <label>Антиконфеті (група до...)</label>
+                            <div class="input-row" style="margin-bottom: 8px;">
+                                <input type="number" id="confetti-threshold" value="1" min="1" max="10" class="input-field" title="Кількість стібків для групи">
+                                <select id="confetti-distance" class="input-field" title="Дистанція пошуку (радіус)">
+                                    <option value="1">Дист: 1</option>
+                                    <option value="2">Дист: 2</option>
+                                    <option value="3" selected>Дист: 3</option>
+                                </select>
+                                <button id="btn-remove-confetti" class="btn-small" style="margin-top:0">Прибрати</button>
+                            </div>
+                        </div>
+                        <div class="confetti-panel" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
+                            <label>Мін. стібків на колір</label>
+                            <div class="input-row" style="margin-bottom: 8px;">
+                                <input type="number" id="min-stitches-limit" value="5" min="1" max="50" class="input-field">
+                                <button id="btn-remove-rare" class="btn-small" style="margin-top:0; border-color: #10b981;">Замінити</button>
+                            </div>
+                            <p style="font-size: 0.65rem; color: var(--text-muted);">Кольори з меншою кількістю стібків будуть замінені на схожі.</p>
+                        </div>
+                    </div>
+
+                    <div class="palette-tabs-small">
+                        <button class="pal-tab active" data-target="pal-project">Проект</button>
+                        <button class="pal-tab" data-target="pal-catalog">DMC</button>
+                    </div>
+                    
+                    <div id="pal-project" class="palette-content active">
+                        <button id="btn-open-organizer" class="btn-primary full-width" style="margin-bottom: 10px; font-size: 0.75rem; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <i data-lucide="layout-grid" style="width: 14px; height: 14px;"></i> Органайзер палітри
+                        </button>
+                        <button id="btn-ai-optimize-palette" class="btn-ai-palette full-width" style="margin-bottom: 10px; font-size: 0.75rem; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> AI-оптимізація палітри
+                        </button>
+                        <div id="project-palette" class="palette-list"></div>
+                    </div>
+                    <div id="pal-catalog" class="palette-content">
+                        <div class="palette-search">
+                            <input type="text" id="palette-search" placeholder="Пошук DMC...">
+                        </div>
+                        <div id="catalog-palette" class="palette-list"></div>
+                    </div>
+                </div>
+
+                <!-- LAYOUT TAB -->
+                <div id="tab-layout" class="tab-side-content">
+                    <div class="tool-group">
+                        <h4>Колір канви (Aida)</h4>
+                        <div class="canvas-color-grid" id="canvas-color-grid">
+                            <div class="c-color active" style="background:#ffffff" data-color="#ffffff" title="White"></div>
+                            <div class="c-color" style="background:#fffdd0" data-color="#fffdd0" title="Cream"></div>
+                            <div class="c-color" style="background:#faebd7" data-color="#faebd7" title="Antique White"></div>
+                            <div class="c-color" style="background:#f5f5dc" data-color="#f5f5dc" title="Ecru"></div>
+                            <div class="c-color" style="background:#faf0e6" data-color="#faf0e6" title="Linen"></div>
+                            <div class="c-color" style="background:#e2d5c3" data-color="#e2d5c3" title="Oatmeal"></div>
+                            <div class="c-color" style="background:#add8e6" data-color="#add8e6" title="Light Blue"></div>
+                            <div class="c-color" style="background:#ffb6c1" data-color="#ffb6c1" title="Light Pink"></div>
+                            <div class="c-color" style="background:#9caf88" data-color="#9caf88" title="Sage"></div>
+                            <div class="c-color" style="background:#f0e68c" data-color="#f0e68c" title="Khaki"></div>
+                            <div class="c-color" style="background:#a47551" data-color="#a47551" title="Mocha"></div>
+                            <div class="c-color" style="background:#a0522d" data-color="#a0522d" title="Sienna"></div>
+                            <div class="c-color" style="background:#000080" data-color="#000080" title="Navy"></div>
+                            <div class="c-color" style="background:#333333" data-color="#333333" title="Dark Grey"></div>
+                            <div class="c-color" style="background:#000000" data-color="#000000" title="Black"></div>
+                            <input type="color" id="custom-canvas-color" title="Інший колір">
+                        </div>
+                    </div>
+                    <div class="tool-group">
+                        <h4>Налаштування сітки</h4>
+                        <div class="info-group">
+                            <label>Колір сітки</label>
+                            <input type="color" id="grid-color-picker" value="#94a3b8" class="input-field" style="height: 38px; padding: 4px;">
+                        </div>
+                    </div>
+                    <div class="tool-group">
+                        <h4>Підкладка (Reference)</h4>
+                        <div class="info-group">
+                            <label>Зображення підкладки</label>
+                            <div style="display:flex; gap: 4px;">
+                                <button class="btn-small full-width" id="btn-upload-underlay" style="margin-top:0">Завантажити</button>
+                                <button id="btn-clear-underlay" class="btn-icon" title="Прибрати" style="padding: 4px; border:1px solid var(--border-color); background:var(--bg-lighter); color:var(--text-main); border-radius:4px;"><i data-lucide="x" style="width:14px; height:14px;"></i></button>
+                            </div>
+                            <input type="file" id="underlay-upload" hidden accept="image/*">
+                        </div>
+                        <div class="info-group">
+                            <label>Прозорість: <span id="underlay-opacity-val">50</span>%</label>
+                            <input type="range" id="underlay-opacity" min="0" max="100" value="50" class="tol-slider">
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="app-footer">
+            <div class="status-bar">
+                <span id="status-pos">X: <span id="status-x">0</span> Y: <span id="status-y">0</span></span>
+                <span id="status-tool">Олівець</span>
+                <span id="status-color">DMC 310</span>
+                <div class="footer-divider"></div>
+                <div class="zoom-controls-footer">
+                    <button id="btn-zoom-out" title="Зменшити"><i data-lucide="minus"></i></button>
+                    <input type="range" id="zoom-slider" min="10" max="300" value="100">
+                    <button id="btn-zoom-in" title="Збільшити"><i data-lucide="plus"></i></button>
+                    <span id="zoom-level">100%</span>
+                </div>
+                <div class="footer-divider"></div>
+                <div class="footer-toggles">
+                    <label class="toggle-label"><input type="checkbox" id="toggle-grid" checked> Сітка</label>
+                    <label class="toggle-label"><input type="checkbox" id="toggle-symbols"> Символи</label>
+                    <label class="toggle-label"><input type="checkbox" id="toggle-center-lines"> Центр</label>
+                </div>
+            </div>
+            <div class="render-modes-footer">
+                <label class="mode-label"><input type="radio" name="render-mode" value="cross" checked> <span>Хрестик</span></label>
+                <label class="mode-label"><input type="radio" name="render-mode" value="pixel"> <span>Піксель</span></label>
+            </div>
+        </footer>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast-container"></div>
+
+    <!-- MODAL: New Project / Import -->
+    <div id="modal-new" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Новий проект</h2><button class="modal-close" data-close="modal-new"><i data-lucide="x"></i></button></div>
+            <div class="modal-tabs">
+                <button class="tab-btn active" data-tab="tab-empty">Пуста схема</button>
+                <button class="tab-btn" data-tab="tab-photo">З фото</button>
+                <button class="tab-btn ai-tab" data-tab="tab-ai-gen">✨ З тексту</button>
+            </div>
+            <div id="tab-empty" class="tab-content active">
+                <div class="form-row">
+                    <label>Ширина</label><input type="number" id="new-width" value="80" min="10" max="500" class="input-field">
+                </div>
+                <div class="form-row">
+                    <label>Висота</label><input type="number" id="new-height" value="80" min="10" max="500" class="input-field">
+                </div>
+                <button id="btn-create-empty" class="btn-primary full-width">Створити</button>
+            </div>
+            <div id="tab-photo" class="tab-content" style="position:relative;">
+                <div id="convert-loading" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:100; flex-direction:column; align-items:center; justify-content:center; border-radius: 8px;">
+                    <div class="spinner" style="margin-bottom: 10px;"></div>
+                    <div id="convert-progress-text" style="color: white; font-weight: bold;">Конвертація: 0%</div>
+                </div>
+                
+                <div class="photo-import-layout">
+                    <!-- Left: Preview -->
+                    <div class="photo-import-left">
+                        <div id="drop-zone" class="drop-zone">
+                            <i data-lucide="image-plus"></i>
+                            <p>Перетягніть фото або натисніть</p>
+                            <input type="file" id="input-image" accept="image/*" hidden>
+                        </div>
+                        <div id="image-editor-area" style="display:none">
+                            <div class="editor-toolbar">
+                                <button id="btn-edit-crop" class="edit-tool" title="Обрізати"><i data-lucide="crop"></i></button>
+                                <button id="btn-edit-circle" class="edit-tool" title="У коло"><i data-lucide="circle"></i></button>
+                                <div class="bg-remove-group">
+                                    <button id="btn-edit-bg-ai" class="edit-tool ai-tool" title="AI видалення фону"><i data-lucide="wand-2"></i></button>
+                                    <button id="btn-edit-bg" class="edit-tool" title="Ручне видалення фону (кліком)"><i data-lucide="eraser"></i></button>
+                                </div>
+                                <button id="btn-edit-reset" class="edit-tool" title="Скинути"><i data-lucide="rotate-ccw"></i></button>
+                            </div>
+                            <div class="canvas-editor-container">
+                                <canvas id="edit-canvas"></canvas>
+                                <div id="crop-overlay" style="display:none"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Settings -->
+                    <div class="photo-import-right">
+                        <div class="form-row">
+                            <label>Ширина (хрестиків)</label><input type="number" id="import-width" value="100" min="10" max="400" class="input-field">
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                            <div class="form-row" style="margin-bottom: 5px;">
+                                <label>Яскравість <span id="val-bright" style="font-size:0.75rem; color:var(--text-secondary);">100%</span></label>
+                                <input type="range" id="import-bright" value="100" min="50" max="150" style="flex:2" class="tol-slider">
+                            </div>
+                            <div class="form-row" style="margin-bottom: 5px;">
+                                <label>Контраст <span id="val-contrast" style="font-size:0.75rem; color:var(--text-secondary);">100%</span></label>
+                                <input type="range" id="import-contrast" value="100" min="50" max="150" style="flex:2" class="tol-slider">
+                            </div>
+                            <div class="form-row" style="margin-bottom: 5px;">
+                                <label>Насиченість <span id="val-sat" style="font-size:0.75rem; color:var(--text-secondary);">100%</span></label>
+                                <input type="range" id="import-sat" value="100" min="0" max="200" style="flex:2" class="tol-slider">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label>Дізеринг <span id="val-dither" style="font-size:0.75rem; color:var(--text-secondary);">0%</span></label>
+                            <input type="range" id="import-dither" value="0" min="0" max="100" style="flex:2" class="tol-slider">
+                        </div>
+
+                        <div class="form-row" style="align-items: flex-start; flex-direction: column; gap: 4px;">
+                            <label class="toggle-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500;">
+                                <input type="checkbox" id="import-optimize-bg"> Оптимізувати фон (головне кліком)
+                            </label>
+                            <span style="font-size: 0.65rem; color: var(--text-muted); line-height: 1.2;">Клікніть на головні елементи на фото (обличчя, одяг тощо). Все інше стане фоном.</span>
+                            <button id="btn-clear-seeds" class="btn-small" style="display: none; margin-top: 4px; padding: 2px 8px; font-size: 0.7rem;">Скинути точки (0)</button>
+                        </div>
+
+                        <div class="form-row">
+                            <label>Макс. кольорів</label><input type="number" id="import-colors" value="30" min="2" max="80" class="input-field">
+                        </div>
+                        <button id="btn-convert" class="btn-primary full-width" style="margin-top:auto;">Конвертувати</button>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-ai-gen" class="tab-content">
+                <div class="ai-settings-content">
+                    <div id="ai-gen-status" class="ai-status disconnected">
+                        <i data-lucide="alert-circle" style="width:16px;height:16px;"></i>
+                        <span>API не налаштовано. <a href="#" id="link-ai-setup" style="color:#7c3aed;">Налаштувати →</a></span>
+                    </div>
+                    <div class="form-row">
+                        <label>Опис схеми</label>
+                        <textarea id="ai-prompt" placeholder="Опишіть, що ви хочете вишити...&#10;Наприклад: 'Букет соняшників у глиняній вазі'"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <label>Стиль</label>
+                        <div class="ai-style-grid">
+                            <button class="active" data-style="realistic">🎨 Реалістичний</button>
+                            <button data-style="pixel">🟦 Піксель-арт</button>
+                            <button data-style="folk">🌻 Народний</button>
+                            <button data-style="minimal">✏️ Мінімалізм</button>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label>Ширина (хрестиків)</label>
+                        <input type="number" id="ai-gen-width" value="100" min="20" max="400" class="input-field">
+                    </div>
+                    <div class="form-row">
+                        <label>Макс. кольорів</label>
+                        <input type="number" id="ai-gen-colors" value="25" min="2" max="80" class="input-field">
+                    </div>
+                    <button id="btn-ai-generate" class="btn-primary full-width ai-badge" style="margin-top:8px;">✨ Згенерувати схему</button>
+                    <div id="ai-gen-results" class="ai-results-grid" style="display:none;"></div>
+                    <div id="ai-gen-loading" class="ai-loading-overlay" style="display:none;">
+                        <div class="ai-loading-spinner"></div>
+                        <div class="ai-loading-text">Генерація зображення...</div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PDF Export Settings -->
+    <div id="modal-pdf" class="modal">
+        <div class="modal-content" style="max-width:1100px; width:95vw; height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header"><h2>Експорт PDF (Професійний Пакет)</h2><button class="modal-close" data-close="modal-pdf"><i data-lucide="x"></i></button></div>
+            <div style="display: flex; gap: 20px; flex: 1; overflow: hidden;">
+                
+                <div class="pdf-settings" style="flex: 1; min-width: 300px; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column;">
+                    <div class="form-row"><label>Назва проекту</label><input type="text" id="pdf-bundle-title" class="input-field" placeholder="Назва схеми"></div>
+                    <div class="form-row"><label>Автор</label><input type="text" id="pdf-bundle-author" class="input-field" placeholder="Ваше ім'я"></div>
+                    <hr>
+                    <h4 style="margin-bottom: 12px; font-size: 0.9rem; color: var(--accent);">Оберіть файли для пакетного вивантаження:</h4>
+                    <div class="checkbox-group" style="display: flex; flex-direction: column; gap: 8px;">
+                        <label class="pdf-check-item"><input type="checkbox" checked id="pdf-one-color"> Планшет: Колір (1 сторінка)</label>
+                        <label class="pdf-check-item"><input type="checkbox" checked id="pdf-one-bw"> Планшет: Ч/Б (1 сторінка)</label>
+                        <label class="pdf-check-item"><input type="checkbox" checked id="pdf-pk"> Pattern Keeper</label>
+                        <label class="pdf-check-item"><input type="checkbox" id="pdf-multi-color"> Друк: Колір (Багатосторінковий)</label>
+                        <label class="pdf-check-item"><input type="checkbox" id="pdf-multi-bw"> Друк: Ч/Б (Багатосторінковий)</label>
+                    </div>
+                    <hr>
+                    <h4 style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-secondary);">Оновити попередній перегляд:</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px;">
+                        <button class="btn-small btn-preview-pdf" data-pdf="one-color">Tablet Color</button>
+                        <button class="btn-small btn-preview-pdf" data-pdf="one-bw">Tablet B&W</button>
+                        <button class="btn-small btn-preview-pdf" data-pdf="pk">Pattern Keeper</button>
+                        <button class="btn-small btn-preview-pdf" data-pdf="multi-color">Print Color</button>
+                        <button class="btn-small btn-preview-pdf" data-pdf="multi-bw">Print B&W</button>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Масштаб перегляду</label>
+                        <input type="range" id="pdf-preview-zoom" min="30" max="150" value="80">
+                    </div>
+                    
+                    <button id="btn-export-pdf-batch" class="btn-primary full-width" style="margin-top: auto; background: var(--accent);"><i data-lucide="file-down"></i> Завантажити обрані PDF (англійською)</button>
+                </div>
+
+                <div class="pdf-preview-container" style="flex: 2; background: #1a1a2e; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; display:flex; flex-direction:column;">
+                    <div id="pdf-preview-list" style="display: flex; flex-direction: column; gap: 20px; padding: 20px; width: 100%; height: 100%; overflow-y: auto;">
+                        <p style="color:var(--text-secondary); text-align:center; margin-top: 50px;">Оберіть тип перегляду зліва</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Export Image -->
+    <div id="modal-export" class="modal">
+        <div class="modal-content" style="max-width: 950px; width: 95vw; height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header"><h2>Експорт проекту</h2><button class="modal-close" data-close="modal-export"><i data-lucide="x"></i></button></div>
+            <div class="export-type-selector">
+                <button class="export-type-btn active" data-type="stitches"><i data-lucide="image"></i> Хрестики</button>
+                <button class="export-type-btn" data-type="scheme"><i data-lucide="grid-3x3"></i> Схема</button>
+                <button class="export-type-btn" data-type="mockup-classic"><i data-lucide="frame"></i> Класична рама</button>
+                <button class="export-type-btn" data-type="mockup-modern"><i data-lucide="square"></i> Сучасна рама</button>
+                <button class="export-type-btn" data-type="mockup-hoop"><i data-lucide="circle"></i> П'яльці</button>
+            </div>
+            
+            <div class="export-preview-container" id="export-preview-box" style="flex: 1; overflow: auto; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; gap: 10px;">
+                <canvas id="export-preview-canvas" style="display: none;"></canvas>
+                <img id="export-preview-img" style="display: block; max-width: 100%; max-height: 85%; object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.5);" title="Права кнопка миші -> Зберегти як..." />
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0; text-align: center;">
+                    💡 <em>Підказка: якщо автоматичне завантаження не спрацювало, натисніть на зображення правою кнопкою миші та оберіть <strong>"Зберегти зображення як..."</strong></em>
+                </p>
+            </div>
+
+            <button id="btn-export-download" class="btn-primary full-width" style="margin-top:12px"><i data-lucide="download"></i> Завантажити PNG</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Palette Organizer -->
+    <div id="modal-organizer" class="modal">
+        <div class="modal-content" style="width: 98vw; max-width: 98vw; height: 95vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h2>Органайзер палітри проекту</h2>
+                <div class="organizer-controls" style="margin-left: auto; margin-right: 20px; display: flex; gap: 10px; align-items: center;">
+                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Сортувати:</span>
+                    <div class="toggle-switch-container" style="margin: 0; min-width: 250px;">
+                        <button class="toggle-btn active" id="btn-sort-count" data-sort="count">За кількістю</button>
+                        <button class="toggle-btn" id="btn-sort-hue" data-sort="hue">За відтінком</button>
+                    </div>
+                </div>
+                <button class="modal-close" data-close="modal-organizer"><i data-lucide="x"></i></button>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Перетягуйте кольорові блоки один на одного, щоб об'єднати їх. Колір, який ви перетягуєте, буде замінено на той, на який ви його кидаєте.
+            </p>
+            <div id="organizer-grid" class="organizer-grid" style="flex: 1; max-height: none;"></div>
+            <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                <button class="btn-primary modal-close" data-close="modal-organizer">Готово</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Symbol Picker -->
+    <div id="modal-symbol-picker" class="modal">
+        <div class="modal-content" style="max-width: 500px; width: 90vw;">
+            <div class="modal-header">
+                <h2>Виберіть символ</h2>
+                <button class="modal-close" data-close="modal-symbol-picker"><i data-lucide="x"></i></button>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;" id="symbol-picker-target-info">
+                Виберіть новий символ для кольору
+            </p>
+            <div id="symbol-picker-grid" class="symbol-picker-grid"></div>
+        </div>
+    </div>
+
+    <!-- MODAL: AI Settings -->
+    <div id="modal-ai-settings" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2>✨ Налаштування AI</h2>
+                <button class="modal-close" data-close="modal-ai-settings"><i data-lucide="x"></i></button>
+            </div>
+            <div class="ai-settings-content">
+                <div id="ai-connection-status" class="ai-status disconnected">
+                    <i data-lucide="wifi-off" style="width:16px;height:16px;"></i>
+                    <span>Не підключено</span>
+                </div>
+                <div class="form-row">
+                    <label>API Ключ (Google AI Studio)</label>
+                    <input type="password" id="ai-api-key" class="input-field ai-key-input" placeholder="AIza...">
+                    <small style="color:var(--text-muted); margin-top:4px;">Отримайте ключ на <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#7c3aed;">aistudio.google.com</a></small>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button id="btn-ai-test" class="btn-small" style="flex:1;">🔌 Тест з'єднання</button>
+                    <button id="btn-ai-save" class="btn-primary" style="flex:1;">💾 Зберегти</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script src="assets.js"></script>
+    <script src="dmc-data.js?v=save_picker_v10"></script>
+    <script src="editor-core.js?v=save_picker_v10"></script>
+    <script src="ai-engine.js"></script>
+    <script src="bg-remove.js"></script>
+    <script src="nanastitch.js?v=save_picker_v10"></script>
+</body>
+</html>
